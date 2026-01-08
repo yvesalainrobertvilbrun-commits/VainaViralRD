@@ -26,7 +26,7 @@
     .card-content h2 { margin:0 0 8px; font-size:18px; }
     .card-content p { margin:0; color:#555; font-size:14px; }
     footer { text-align:center; padding:15px; font-size:12px; color:#777; }
-    .btn { display:block; width:100%; padding:12px; background:#000; color:#fff; border:none; border-radius:25px; font-size:16px; margin-top:10px; }
+    .btn { display:block; width:100%; padding:12px; background:#000; color:#fff; border:none; border-radius:25px; font-size:16px; margin-top:10px; cursor:pointer; }
   </style>
 </head>
 
@@ -47,13 +47,11 @@
   </div>
 
   <!-- Contenedor de noticias -->
-  <div class="container" id="feed">
-    <!-- Noticias se cargarán aquí -->
-  </div>
+  <div class="container" id="feed"></div>
 
   <button class="btn" id="loadMore">Cargar más noticias</button>
 
-  <!-- Monetización invisible con PayPal -->
+  <!-- Pagos invisibles PayPal -->
   <div style="text-align:center; margin:20px 0;">
     <button class="btn" onclick="pagarPaypal(5)">Apóyanos con 5 USD</button>
     <button class="btn" onclick="pagarPaypal(10)">Apóyanos con 10 USD</button>
@@ -119,6 +117,7 @@
           </div>
         `;
         feedContainer.appendChild(card);
+
         // Insertar AdSense cada 3 noticias
         if ((index+1)%3===0){
           feedContainer.insertAdjacentHTML('beforeend',`
@@ -134,17 +133,16 @@
     }
 
     cargarNoticias();
-
     document.getElementById("loadMore").addEventListener("click",()=>{cargarNoticias(5);});
 
-    // Service Worker PWA
+    // PWA Service Worker
     if('serviceWorker' in navigator){
       navigator.serviceWorker.register('sw.js')
         .then(()=>console.log('Service Worker registrado'))
         .catch(err=>console.log('Error SW:',err));
     }
 
-    // 🔹 Función de pagos invisibles
+    // Pagos invisibles PayPal
     function pagarPaypal(monto){
       const url = `https://www.paypal.me/tuusuario/${monto}`;
       window.open(url,"_blank");
