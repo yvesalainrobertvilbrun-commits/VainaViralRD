@@ -13,60 +13,36 @@
   <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- CSS -->
   <style>
     * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
-    body { margin:0; background: #f4f4f4; }
-    header { background:#d40000; color:#fff; padding:10px; text-align:center; font-size:22px; font-weight:bold; display:flex; align-items:center; justify-content:center; }
-    header img { height:40px; margin-right:10px; }
-    .container { padding:10px; }
-    .card { background:#fff; border-radius:15px; overflow:hidden; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    .card img { width:100%; height:200px; object-fit:cover; }
-    .card-content { padding:12px; }
-    .card-content h2 { margin:0 0 8px; font-size:18px; }
-    .card-content p { margin:0; color:#555; font-size:14px; }
-    footer { text-align:center; padding:15px; font-size:12px; color:#777; }
-    .btn { display:block; width:100%; padding:12px; background:#000; color:#fff; border:none; border-radius:25px; font-size:16px; margin-top:10px; cursor:pointer; }
+    body { margin:0; background:#f4f4f4; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
+    header { display:flex; flex-direction:column; align-items:center; margin-bottom:30px; }
+    header img { height:80px; margin-bottom:10px; }
+    h1 { color:#d40000; margin:0; font-size:28px; }
+    .btn { width:80%; padding:12px; margin:8px 0; font-size:16px; border:none; border-radius:25px; cursor:pointer; color:#fff; }
+    .btn-google { background:#4285F4; }
+    .btn-facebook { background:#3b5998; }
+    .btn-paypal { background:#000; }
   </style>
 </head>
-
 <body>
 
   <header>
     <img src="logo.png" alt="Logo La Vaina Viral">
-    🔥 La Vaina Viral
+    <h1>La Vaina Viral</h1>
   </header>
 
   <!-- Login / Registro -->
-  <div style="padding:10px; background:#fff; margin:15px; border-radius:12px;">
-    <h3>Registro / Login</h3>
-    <input type="email" id="email" placeholder="Email" style="width:100%; margin-bottom:5px;">
-    <input type="password" id="password" placeholder="Contraseña" style="width:100%; margin-bottom:5px;">
-    <button class="btn" onclick="registrar(document.getElementById('email').value, document.getElementById('password').value)">Registrarse</button>
-    <button class="btn" onclick="login(document.getElementById('email').value, document.getElementById('password').value)">Login</button>
-  </div>
+  <button class="btn btn-google" onclick="loginGoogle()">Iniciar sesión con Google</button>
+  <button class="btn btn-facebook" onclick="loginFacebook()">Iniciar sesión con Facebook</button>
 
-  <!-- Contenedor de noticias -->
-  <div class="container" id="feed"></div>
+  <!-- Botones de apoyo -->
+  <button class="btn btn-paypal" onclick="pagarPaypal(5)">Apóyanos con 5 USD</button>
+  <button class="btn btn-paypal" onclick="pagarPaypal(10)">Apóyanos con 10 USD</button>
 
-  <button class="btn" id="loadMore">Cargar más noticias</button>
-
-  <!-- Pagos invisibles PayPal -->
-  <div style="text-align:center; margin:20px 0;">
-    <button class="btn" onclick="pagarPaypal(5)">Apóyanos con 5 USD</button>
-    <button class="btn" onclick="pagarPaypal(10)">Apóyanos con 10 USD</button>
-    <button class="btn" onclick="pagarPaypal(20)">Apóyanos con 20 USD</button>
-  </div>
-
-  <footer>
-    © 2026 La Vaina Viral · Entretenimiento & Farándula
-  </footer>
-
-  <!-- Firebase y JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
     // Config Firebase
     const firebaseConfig = {
@@ -78,76 +54,38 @@
       appId: "TU_APP_ID"
     };
 
-    // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth();
-    const feedContainer = document.getElementById("feed");
-    let lastLoaded = 0;
+    const auth = getAuth(app);
 
-    // Funciones Auth
-    async function registrar(email, password){
-      try{
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        alert("Usuario registrado: " + userCredential.user.email);
-      } catch(e){ alert("Error: " + e.message); }
+    // Login con Google
+    function loginGoogle(){
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider)
+        .then(result => {
+          alert("Bienvenido " + result.user.displayName);
+          // Redirigir a feed después de login
+          window.location.href = "feed.html";
+        })
+        .catch(error => alert("Error: " + error.message));
     }
 
-    async function login(email, password){
-      try{
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        alert("Bienvenido: " + userCredential.user.email);
-      } catch(e){ alert("Error: " + e.message); }
-    }
-
-    // Cargar noticias desde Firebase
-    async function cargarNoticias(cantidad = 5){
-      const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), limit(lastLoaded + cantidad));
-      const snapshot = await getDocs(q);
-      feedContainer.innerHTML = "";
-      snapshot.forEach((doc,index)=>{
-        const data = doc.data();
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <img src="${data.imagen}">
-          <div class="card-content">
-            <h2>${data.titulo}</h2>
-            <p>${data.descripcion}</p>
-          </div>
-        `;
-        feedContainer.appendChild(card);
-
-        // Insertar AdSense cada 3 noticias
-        if ((index+1)%3===0){
-          feedContainer.insertAdjacentHTML('beforeend',`
-            <div style="text-align:center; margin:15px 0;">
-              <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=TU_CLIENT_ID" crossorigin="anonymous"></script>
-              <ins class="adsbygoogle" style="display:block" data-ad-format="auto" data-full-width-responsive="true"></ins>
-              <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
-            </div>
-          `);
-        }
-      });
-      lastLoaded += cantidad;
-    }
-
-    cargarNoticias();
-    document.getElementById("loadMore").addEventListener("click",()=>{cargarNoticias(5);});
-
-    // PWA Service Worker
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('sw.js')
-        .then(()=>console.log('Service Worker registrado'))
-        .catch(err=>console.log('Error SW:',err));
+    // Login con Facebook
+    function loginFacebook(){
+      const provider = new FacebookAuthProvider();
+      signInWithPopup(auth, provider)
+        .then(result => {
+          alert("Bienvenido " + result.user.displayName);
+          window.location.href = "feed.html";
+        })
+        .catch(error => alert("Error: " + error.message));
     }
 
     // Pagos invisibles PayPal
     function pagarPaypal(monto){
       const url = `https://www.paypal.me/tuusuario/${monto}`;
-      window.open(url,"_blank");
+      window.open(url, "_blank");
     }
-
   </script>
+
 </body>
 </html>
