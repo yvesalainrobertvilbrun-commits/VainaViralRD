@@ -8,7 +8,7 @@
   <!-- PWA iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="logo.png">
 
   <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -17,7 +17,8 @@
   <style>
     * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
     body { margin:0; background: #f4f4f4; }
-    header { background:#d40000; color:#fff; padding:15px; text-align:center; font-size:22px; font-weight:bold; }
+    header { background:#d40000; color:#fff; padding:10px; text-align:center; font-size:22px; font-weight:bold; display:flex; align-items:center; justify-content:center; }
+    header img { height:40px; margin-right:10px; }
     .container { padding:10px; }
     .card { background:#fff; border-radius:15px; overflow:hidden; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
     .card img { width:100%; height:200px; object-fit:cover; }
@@ -32,6 +33,7 @@
 <body>
 
   <header>
+    <img src="logo.png" alt="Logo La Vaina Viral">
     🔥 La Vaina Viral
   </header>
 
@@ -45,47 +47,58 @@
     © 2026 La Vaina Viral · Entretenimiento & Farándula
   </footer>
 
-  <!-- JS -->
-  <script>
-    /*************
-     * OPCIÓN A → Feed dinámico
-     *************/
-    let noticias = [
-      { titulo:"Escándalo en la farándula", descripcion:"Una nueva polémica sacude las redes sociales.", imagen:"https://via.placeholder.com/600x400?text=Farándula+1" },
-      { titulo:"Artista sorprende a sus fans", descripcion:"El anuncio que nadie esperaba.", imagen:"https://via.placeholder.com/600x400?text=Farándula+2" },
-      { titulo:"Video viral del momento", descripcion:"El clip que está rompiendo internet.", imagen:"https://via.placeholder.com/600x400?text=Farándula+3" }
-    ];
+  <!-- Firebase JS -->
+  <script type="module">
+    // Importar Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    const feed = document.getElementById("feed");
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_DOMINIO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_PROJECT_ID.appspot.com",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
 
-    function renderNoticias(array) {
-      array.forEach(noticia => {
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const feedContainer = document.getElementById("feed");
+
+    let lastLoaded = 0; // Para cargar más noticias
+
+    async function cargarNoticias(cantidad = 5) {
+      const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), limit(lastLoaded + cantidad));
+      const snapshot = await getDocs(q);
+      feedContainer.innerHTML = ""; // Limpiar feed antes de cargar todo
+      snapshot.forEach(doc => {
+        const data = doc.data();
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <img src="${noticia.imagen}">
+          <img src="${data.imagen}">
           <div class="card-content">
-            <h2>${noticia.titulo}</h2>
-            <p>${noticia.descripcion}</p>
+            <h2>${data.titulo}</h2>
+            <p>${data.descripcion}</p>
           </div>
         `;
-        feed.appendChild(card);
+        feedContainer.appendChild(card);
       });
+      lastLoaded += cantidad;
     }
 
-    renderNoticias(noticias);
+    // Cargar noticias iniciales
+    cargarNoticias();
 
-    // Botón "Cargar más" - simulación de feed infinito
+    // Botón "Cargar más"
     document.getElementById("loadMore").addEventListener("click", () => {
-      const nuevasNoticias = [
-        { titulo:"Noticia extra 1", descripcion:"Más contenido viral para ti.", imagen:"https://via.placeholder.com/600x400?text=Extra+1" },
-        { titulo:"Noticia extra 2", descripcion:"No te pierdas los detalles.", imagen:"https://via.placeholder.com/600x400?text=Extra+2" }
-      ];
-      renderNoticias(nuevasNoticias);
+      cargarNoticias(5);
     });
 
     /*************
-     * OPCIÓN B → Convertir en PWA (instalable)
+     * PWA Service Worker
      *************/
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
@@ -94,17 +107,9 @@
     }
 
     /*************
-     * OPCIÓN C → Monetización (Ads)
+     * Monetización y seguridad
+     * Aquí se agregarán Ads y reglas de Firebase
      *************/
-    // Aquí se integrarán anuncios, por ejemplo Google AdSense o AdMob
-    // <script data-ad-client="ca-pub-XXXX" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-
-    /*************
-     * OPCIÓN D → Seguridad + Dominio
-     *************/
-    // HTTPS obligatorio
-    // Reglas de Firebase / Auth
-    // Dominio propio apuntando a la app
   </script>
 
 </body>
