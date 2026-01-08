@@ -5,6 +5,14 @@
   <title>La Vaina Viral</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- PWA iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
   <!-- CSS -->
   <style>
     * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
@@ -28,10 +36,10 @@
   </header>
 
   <div class="container" id="feed">
-    <!-- Noticias se cargarán aquí (Opción A) -->
+    <!-- Noticias se cargarán aquí -->
   </div>
 
-  <button class="btn" id="loadMore">Cargar más noticias</button> <!-- Opción A: feed dinámico -->
+  <button class="btn" id="loadMore">Cargar más noticias</button>
 
   <footer>
     © 2026 La Vaina Viral · Entretenimiento & Farándula
@@ -42,7 +50,7 @@
     /*************
      * OPCIÓN A → Feed dinámico
      *************/
-    const noticias = [
+    let noticias = [
       { titulo:"Escándalo en la farándula", descripcion:"Una nueva polémica sacude las redes sociales.", imagen:"https://via.placeholder.com/600x400?text=Farándula+1" },
       { titulo:"Artista sorprende a sus fans", descripcion:"El anuncio que nadie esperaba.", imagen:"https://via.placeholder.com/600x400?text=Farándula+2" },
       { titulo:"Video viral del momento", descripcion:"El clip que está rompiendo internet.", imagen:"https://via.placeholder.com/600x400?text=Farándula+3" }
@@ -67,7 +75,7 @@
 
     renderNoticias(noticias);
 
-    // Opción A: botón "Cargar más"
+    // Botón "Cargar más" - simulación de feed infinito
     document.getElementById("loadMore").addEventListener("click", () => {
       const nuevasNoticias = [
         { titulo:"Noticia extra 1", descripcion:"Más contenido viral para ti.", imagen:"https://via.placeholder.com/600x400?text=Extra+1" },
@@ -78,11 +86,12 @@
 
     /*************
      * OPCIÓN B → Convertir en PWA (instalable)
-     * Nota: se necesita crear un archivo manifest.json y service worker
      *************/
-    // manifest.json y sw.js se agregan en el proyecto para hacerlo PWA
-    // <link rel="manifest" href="manifest.json">
-    // navigator.serviceWorker.register('sw.js');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(err => console.log('Error SW:', err));
+    }
 
     /*************
      * OPCIÓN C → Monetización (Ads)
@@ -93,11 +102,9 @@
     /*************
      * OPCIÓN D → Seguridad + Dominio
      *************/
-    // Opción D incluye:
-    // - HTTPS obligatorio
-    // - Reglas de Firebase (si se usa)
-    // - Control de usuarios
-    // - Dominio propio apuntando a la app
+    // HTTPS obligatorio
+    // Reglas de Firebase / Auth
+    // Dominio propio apuntando a la app
   </script>
 
 </body>
