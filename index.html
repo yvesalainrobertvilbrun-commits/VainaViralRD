@@ -37,22 +37,40 @@
     🔥 La Vaina Viral
   </header>
 
+  <!-- Login / Registro -->
+  <div style="padding:10px; background:#fff; margin:15px; border-radius:12px;">
+    <h3>Registro / Login</h3>
+    <input type="email" id="email" placeholder="Email" style="width:100%; margin-bottom:5px;">
+    <input type="password" id="password" placeholder="Contraseña" style="width:100%; margin-bottom:5px;">
+    <button class="btn" onclick="registrar(document.getElementById('email').value, document.getElementById('password').value)">Registrarse</button>
+    <button class="btn" onclick="login(document.getElementById('email').value, document.getElementById('password').value)">Login</button>
+  </div>
+
+  <!-- Contenedor de noticias -->
   <div class="container" id="feed">
     <!-- Noticias se cargarán aquí -->
   </div>
 
   <button class="btn" id="loadMore">Cargar más noticias</button>
 
+  <!-- Monetización invisible con PayPal -->
+  <div style="text-align:center; margin:20px 0;">
+    <button class="btn" onclick="pagarPaypal(5)">Apóyanos con 5 USD</button>
+    <button class="btn" onclick="pagarPaypal(10)">Apóyanos con 10 USD</button>
+    <button class="btn" onclick="pagarPaypal(20)">Apóyanos con 20 USD</button>
+  </div>
+
   <footer>
     © 2026 La Vaina Viral · Entretenimiento & Farándula
   </footer>
 
-  <!-- Firebase JS -->
+  <!-- Firebase y JS -->
   <script type="module">
-    // Importar Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+    // Config Firebase
     const firebaseConfig = {
       apiKey: "TU_API_KEY",
       authDomain: "TU_DOMINIO.firebaseapp.com",
@@ -65,15 +83,31 @@
     // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth();
     const feedContainer = document.getElementById("feed");
+    let lastLoaded = 0;
 
-    let lastLoaded = 0; // Para cargar más noticias
+    // Funciones Auth
+    async function registrar(email, password){
+      try{
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        alert("Usuario registrado: " + userCredential.user.email);
+      } catch(e){ alert("Error: " + e.message); }
+    }
 
-    async function cargarNoticias(cantidad = 5) {
+    async function login(email, password){
+      try{
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert("Bienvenido: " + userCredential.user.email);
+      } catch(e){ alert("Error: " + e.message); }
+    }
+
+    // Cargar noticias desde Firebase
+    async function cargarNoticias(cantidad = 5){
       const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), limit(lastLoaded + cantidad));
       const snapshot = await getDocs(q);
-      feedContainer.innerHTML = ""; // Limpiar feed antes de cargar todo
-      snapshot.forEach(doc => {
+      feedContainer.innerHTML = "";
+      snapshot.forEach((doc,index)=>{
         const data = doc.data();
         const card = document.createElement("div");
         card.className = "card";
@@ -85,32 +119,37 @@
           </div>
         `;
         feedContainer.appendChild(card);
+        // Insertar AdSense cada 3 noticias
+        if ((index+1)%3===0){
+          feedContainer.insertAdjacentHTML('beforeend',`
+            <div style="text-align:center; margin:15px 0;">
+              <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=TU_CLIENT_ID" crossorigin="anonymous"></script>
+              <ins class="adsbygoogle" style="display:block" data-ad-format="auto" data-full-width-responsive="true"></ins>
+              <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+            </div>
+          `);
+        }
       });
       lastLoaded += cantidad;
     }
 
-    // Cargar noticias iniciales
     cargarNoticias();
 
-    // Botón "Cargar más"
-    document.getElementById("loadMore").addEventListener("click", () => {
-      cargarNoticias(5);
-    });
+    document.getElementById("loadMore").addEventListener("click",()=>{cargarNoticias(5);});
 
-    /*************
-     * PWA Service Worker
-     *************/
-    if ('serviceWorker' in navigator) {
+    // Service Worker PWA
+    if('serviceWorker' in navigator){
       navigator.serviceWorker.register('sw.js')
-        .then(() => console.log('Service Worker registrado'))
-        .catch(err => console.log('Error SW:', err));
+        .then(()=>console.log('Service Worker registrado'))
+        .catch(err=>console.log('Error SW:',err));
     }
 
-    /*************
-     * Monetización y seguridad
-     * Aquí se agregarán Ads y reglas de Firebase
-     *************/
-  </script>
+    // 🔹 Función de pagos invisibles
+    function pagarPaypal(monto){
+      const url = `https://www.paypal.me/tuusuario/${monto}`;
+      window.open(url,"_blank");
+    }
 
+  </script>
 </body>
 </html>
