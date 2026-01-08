@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>La Vaina Viral</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f4f4;
+    }
+
+    header {
+      background: #d40000;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 10px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 12px;
+    }
+
+    .card-content h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card-content p {
+      margin: 0;
+      color: #555;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    🔥 La Vaina Viral
+  </header>
+
+  <div class="container" id="feed">
+    <!-- Noticias se cargan aquí -->
+  </div>
+
+  <footer>
+    © 2026 La Vaina Viral · Entretenimiento & Farandula
+  </footer>
+
+  <script>
+    const noticias = [
+      {
+        titulo: "Escándalo en la farándula",
+        descripcion: "Una nueva polémica sacude las redes sociales.",
+        imagen: "https://via.placeholder.com/600x400?text=Farándula+1"
+      },
+      {
+        titulo: "Artista sorprende a sus fans",
+        descripcion: "El anuncio que nadie esperaba.",
+        imagen: "https://via.placeholder.com/600x400?text=Farándula+2"
+      },
+      {
+        titulo: "Video viral del momento",
+        descripcion: "El clip que está rompiendo internet.",
+        imagen: "https://via.placeholder.com/600x400?text=Farándula+3"
+      }
+    ];
+
+    const feed = document.getElementById("feed");
+
+    noticias.forEach(noticia => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <img src="${noticia.imagen}">
+        <div class="card-content">
+          <h2>${noticia.titulo}</h2>
+          <p>${noticia.descripcion}</p>
+        </div>
+      `;
+
+      feed.appendChild(card);
+    });
+  </script>
+
+</body>
+</html>
