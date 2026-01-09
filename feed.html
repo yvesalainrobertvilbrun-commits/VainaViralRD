@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>La Vaina Viral - Noticias</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body { margin:0; background:#f4f4f4; }
+    header { background:#d40000; color:#fff; padding:10px; text-align:center; font-size:22px; font-weight:bold; display:flex; align-items:center; justify-content:center; }
+    header img { height:40px; margin-right:10px; }
+    .container { padding:10px; }
+    .card { background:#fff; border-radius:15px; overflow:hidden; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    .card img { width:100%; height:200px; object-fit:cover; }
+    .card-content { padding:12px; }
+    .card-content h2 { margin:0 0 8px; font-size:18px; }
+    .card-content p { margin:0; color:#555; font-size:14px; }
+    .btn { display:block; width:100%; padding:12px; background:#000; color:#fff; border:none; border-radius:25px; font-size:16px; margin:10px 0; cursor:pointer; }
+    footer { text-align:center; padding:15px; font-size:12px; color:#777; }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <img src="logo.png" alt="Logo La Vaina Viral">
+    🔥 La Vaina Viral
+  </header>
+
+  <div class="container" id="feed"></div>
+  <button class="btn" id="loadMore">Cargar más noticias</button>
+
+  <!-- Botones PayPal -->
+  <div style="text-align:center; margin:20px 0;">
+    <button class="btn" onclick="pagarPaypal(5)">Apóyanos con 5 USD</button>
+    <button class="btn" onclick="pagarPaypal(10)">Apóyanos con 10 USD</button>
+    <button class="btn" onclick="pagarPaypal(20)">Apóyanos con 20 USD</button>
+  </div>
+
+  <footer>
+    © 2026 La Vaina Viral · Entretenimiento & Farándula
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_DOMINIO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_PROJECT_ID.appspot.com",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const feedContainer = document.getElementById("feed");
+    let lastLoaded = 0;
+
+    onAuthStateChanged(auth, user => {
+      if(!user){ window.location.href = "index.html"; }
+    });
+
+    async function cargarNoticias(cantidad = 5){
+      const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), limit(lastLoaded + cantidad));
+      const snapshot = await getDocs(q);
+      feedContainer.innerHTML = "";
+      snapshot.forEach((doc,index)=>{
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${data.imagen}">
+          <div class="card-content">
+            <h2>${data.titulo}</h2>
+            <p>${data.descripcion}</p>
+          </div>
+        `;
+        feedContainer.appendChild(card);
+
+        if ((index+1)%3===0){
+          feedContainer.insertAdjacentHTML('beforeend',`
+            <div style="text-align:center; margin:15px 0;">
+              <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=TU_CLIENT_ID" crossorigin="anonymous"></script>
+              <ins class="adsbygoogle" style="display:block" data-ad-format="auto" data-full-width-responsive="true"></ins>
+              <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+            </div>
+          `);
+        }
+      });
+      lastLoaded += cantidad;
+    }
+
+    cargarNoticias();
+    document.getElementById("loadMore").addEventListener("click",()=>{cargarNoticias(5);});
+
+    function pagarPaypal(monto){
+      const url = `https://www.paypal.me/tuusuario/${monto}`;
+      window.open(url, "_blank");
+    }
+
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js')
+        .then(()=>console.log('Service Worker registrado'))
+        .catch(err=>console.log('Error SW:',err));
+    }
+  </script>
+
+</body>
+</html>
