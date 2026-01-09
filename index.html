@@ -44,7 +44,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // Config Firebase
     const firebaseConfig = {
       apiKey: "TU_API_KEY",
       authDomain: "TU_DOMINIO.firebaseapp.com",
@@ -57,19 +56,16 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Login con Google
     function loginGoogle(){
       const provider = new GoogleAuthProvider();
       signInWithPopup(auth, provider)
         .then(result => {
           alert("Bienvenido " + result.user.displayName);
-          // Redirigir a feed después de login
           window.location.href = "feed.html";
         })
         .catch(error => alert("Error: " + error.message));
     }
 
-    // Login con Facebook
     function loginFacebook(){
       const provider = new FacebookAuthProvider();
       signInWithPopup(auth, provider)
@@ -80,7 +76,6 @@
         .catch(error => alert("Error: " + error.message));
     }
 
-    // Pagos invisibles PayPal
     function pagarPaypal(monto){
       const url = `https://www.paypal.me/tuusuario/${monto}`;
       window.open(url, "_blank");
